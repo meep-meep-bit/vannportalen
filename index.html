@@ -6,50 +6,64 @@
 
   <title>Vannprøver i Valdres</title>
 
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Vannprøver">
-
   <meta name="theme-color" content="#0b5cad">
 
   <link rel="manifest" href="manifest.json">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header>
-    <button id="openList">☰</button>
-    <div>Vannprøveportalen</div>
-    <div id="status">Laster prøvesteder...</div>
-  </header>
 
-  <div id="listPanel">
-    <div class="list-header">
-      <strong>Prøvesteder</strong>
-      <button id="closeList">×</button>
+  <section id="homeScreen" class="home-screen">
+    <div class="home-card">
+      <div class="logo">💧</div>
+      <h1>Vannportalen Valdres</h1>
+      <p class="subtitle">Kart og feltstøtte for vannprøver</p>
+
+      <div class="menu">
+        <button id="btnShowMap">🗺️ Vis alle prøvesteder</button>
+        <button id="btnRoutePlanner">🚗 Planlegg dagens rute</button>
+        <button id="btnNearest">📍 Finn nærmeste prøvested</button>
+        <button id="btnReport">📷 Meld inn endringer</button>
+        <button id="btnAbout">ℹ️ Om prosjektet</button>
+      </div>
     </div>
-    <div id="locationList"></div>
-  </div>
+  </section>
 
-  <div id="searchBox">
-    <input id="searchInput" type="text" placeholder="Søk etter gårdsnavn eller sted...">
-  </div>
+  <section id="mapScreen" class="map-screen hidden">
 
-  <main>
+    <div class="topbar">
+      <button id="backButton" class="top-button">← Meny</button>
+      <button id="openList" class="top-button icon-button">☰</button>
+      <input id="searchInput" type="text" placeholder="Søk etter gårdsnavn eller sted...">
+      <div id="status">Laster prøvesteder...</div>
+    </div>
+
     <div id="map"></div>
+
+    <aside id="listPanel">
+      <div class="panel-header">
+        <strong>Prøvesteder</strong>
+        <button id="closeList">×</button>
+      </div>
+      <div id="locationList"></div>
+    </aside>
 
     <aside id="detailsPanel">
       <button id="closePanel">×</button>
-      <div id="detailsContent">
-        <h2>Velg et prøvested</h2>
-        <p>Trykk på et punkt i kartet for å se detaljer.</p>
-      </div>
+      <div id="detailsContent"></div>
     </aside>
-  </main>
+
+  </section>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="app.js"></script>
+
 </body>
 </html>

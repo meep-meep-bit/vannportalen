@@ -1,90 +1,146 @@
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSiOWsBI3_PrgpBrwW7N7diNBev_vgmWlawWuIGFj0uaJhA6KWQUb1YKvkHqx6TqAHG43myXARWX_if/pub?gid=0&single=true&output=csv";
 
-const map = L.map("map").setView([60.92, 9.41], 11);
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: "&copy; OpenStreetMap"
-}).addTo(map);
-
-const locations = [];
+let map;
+let mapStarted = false;
+let locations = [];
 
 const todayKey = new Date().toISOString().slice(0, 10);
 const completedKey = `completed-${todayKey}`;
 let completedToday = JSON.parse(localStorage.getItem(completedKey) || "[]");
 
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("btnShowMap").addEventListener("click", showMap);
+  document.getElementById("btnRoutePlanner").addEventListener("click", () => alert("Ruteplanlegger kommer i neste versjon."));
+  document.getElementById("btnNearest").addEventListener("click", () => alert("Finn nærmeste prøvested kommer i neste versjon."));
+  document.getElementById("btnReport").addEventListener("click", () => alert("Meld inn endringer kommer i neste versjon."));
+  document.getElementById("btnAbout").addEventListener("click", () => alert("Vannportalen Valdres er en enkel feltapp for oversikt over vannprøvesteder."));
+  document.getElementById("backButton").addEventListener("click", showHome);
+});
+
+function showHome() {
+  document.getElementById("homeScreen").classList.remove("hidden");
+  document.getElementById("mapScreen").classList.add("hidden");
+}
+
+function showMap() {
+  document.getElementById("homeScreen").classList.add("hidden");
+  document.getElementById("mapScreen").classList.remove("hidden");
+
+  setTimeout(() => {
+    if (!mapStarted) {
+      startMap();
+      mapStarted = true;
+    } else {
+      map.invalidateSize();
+    }
+  }, 200);
+}
+
+function startMap() {
+  map = L.map("map").setView([60.92, 9.41], 11);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap"
+  }).addTo(map);
+
+  setupMapButtons();
+  loadLocations();
+}
+
+function setupMapButtons() {
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    const query = e.target.value.toLowerCase();
+
+    locations.forEach(item => {
+      const text = item.searchText.toLowerCase();
+
+      if (text.includes(query)) {
+        if (!map.hasLayer(item.marker)) item.marker.addTo(map);
+      } else {
+        if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
+      }
+    });
+  });
+
+  document.getElementById("openList").addEventListener("click", function() {
+    document.getElementById("listPanel").classList.add("open");
+  });
+
+  document.getElementById("closeList").addEventListener("click", function() {
+    document.getElementById("listPanel").classList.remove("open");
+  });
+
+  document.getElementById("closePanel").addEventListener("click", function() {
+    document.getElementById("detailsPanel").classList.remove("open");
+  });
+}
+
+function loadLocations() {
+  document.getElementById("status").textContent = "Laster prøvesteder...";
+
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      locations = [];
+
+      results.data.forEach(row => {
+        const lat = parseFloat((row.Latitude || "").replace(",", "."));
+        const lng = parseFloat((row.Longitude || "").replace(",", "."));
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const order = parseInt(row.Rekkefølge) || locations.length + 1;
+        const name = row.Navn || "Ukjent sted";
+        const id = row.ID || name;
+
+        const marker = L.marker([lat, lng], {
+          icon: createNumberIcon(completedToday.includes(id) ? "✓" : order)
+        }).addTo(map);
+
+        const location = {
+          id,
+          order,
+          name,
+          lat,
+          lng,
+          row,
+          marker,
+          searchText: `${id} ${name} ${row.Adresse || ""} ${row.Beskrivelse || ""} ${row.Innkjøring || ""} ${row.Kontaktperson || ""}`
+        };
+
+        marker.on("click", function() {
+          showDetails(location);
+        });
+
+        locations.push(location);
+      });
+
+      locations.sort((a, b) => a.order - b.order);
+
+      document.getElementById("status").textContent = `${locations.length} prøvesteder`;
+
+      if (locations.length > 0) {
+        const group = L.featureGroup(locations.map(item => item.marker));
+        map.fitBounds(group.getBounds().pad(0.2));
+      }
+
+      renderLocationList();
+      map.invalidateSize();
+    }
+  });
+}
+
 function createNumberIcon(number) {
   return L.divIcon({
     className: "number-marker",
     html: `<div>${number}</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17]
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
   });
 }
-
-Papa.parse(csvUrl, {
-  download: true,
-  header: true,
-  skipEmptyLines: true,
-  complete: function(results) {
-    results.data.forEach(row => {
-      const lat = parseFloat((row.Latitude || "").replace(",", "."));
-      const lng = parseFloat((row.Longitude || "").replace(",", "."));
-
-      if (isNaN(lat) || isNaN(lng)) return;
-
-      const order = parseInt(row.Rekkefølge) || locations.length + 1;
-      const name = row.Navn || "Ukjent sted";
-      const id = row.ID || name;
-
-      const marker = L.marker([lat, lng], {
-        icon: createNumberIcon(completedToday.includes(id) ? "✓" : order)
-      }).addTo(map);
-
-      const location = {
-        id,
-        order,
-        name,
-        lat,
-        lng,
-        row,
-        marker,
-        searchText: `${name} ${row.Adresse || ""} ${row.Beskrivelse || ""} ${row.Innkjøring || ""}`
-      };
-
-      marker.on("click", function() {
-        showDetails(location);
-      });
-
-      locations.push(location);
-    });
-
-    locations.sort((a, b) => a.order - b.order);
-
-    document.getElementById("status").textContent = `${locations.length} prøvesteder`;
-
-    if (locations.length > 0) {
-      const group = L.featureGroup(locations.map(item => item.marker));
-      map.fitBounds(group.getBounds().pad(0.2));
-    }
-
-    renderLocationList();
-  }
-});
-
-document.getElementById("searchInput").addEventListener("input", function(e) {
-  const query = e.target.value.toLowerCase();
-
-  locations.forEach(item => {
-    const text = item.searchText.toLowerCase();
-
-    if (text.includes(query)) {
-      if (!map.hasLayer(item.marker)) item.marker.addTo(map);
-    } else {
-      if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
-    }
-  });
-});
 
 function showDetails(location) {
   const row = location.row;
@@ -97,7 +153,7 @@ function showDetails(location) {
 
   content.innerHTML = `
     <h2 class="detail-title">${location.order}. ${location.name}</h2>
-    <div class="detail-address">${row.Adresse || ""}</div>
+    <div class="detail-address">${row.Adresse || "Adresse ikke registrert"}</div>
 
     ${hovedbilde ? `
       <img id="mainPhoto" class="detail-photo" src="${hovedbilde}" alt="Bilde av prøvested" referrerpolicy="no-referrer">
@@ -126,13 +182,13 @@ function showDetails(location) {
       Naviger hit
     </a>
 
- <div class="visit-card">
-  <div>
-    <div class="visit-label">Dagens status</div>
-    <div id="visitStatus" class="visit-status"></div>
-  </div>
-  <button type="button" id="doneButton" class="done-btn" onclick="toggleCompleted('${location.id}')"></button>
-</div>
+    <div class="visit-card">
+      <div>
+        <div class="visit-label">Dagens status</div>
+        <div id="visitStatus" class="visit-status"></div>
+      </div>
+      <button type="button" id="doneButton" class="done-btn" onclick="toggleCompleted('${location.id}')"></button>
+    </div>
 
     <details class="more-info">
       <summary>Mer informasjon</summary>
@@ -162,6 +218,11 @@ function showDetails(location) {
 
   updateCompletedDisplay(location.id);
   panel.classList.add("open");
+}
+
+function setMainPhoto(url) {
+  const img = document.getElementById("mainPhoto");
+  if (img) img.src = url;
 }
 
 function toggleCompleted(id) {
@@ -198,11 +259,6 @@ function updateCompletedDisplay(id) {
   }
 }
 
-function setMainPhoto(url) {
-  const img = document.getElementById("mainPhoto");
-  if (img) img.src = url;
-}
-
 function renderLocationList() {
   const list = document.getElementById("locationList");
   list.innerHTML = "";
@@ -231,35 +287,16 @@ function renderLocationList() {
   });
 }
 
-document.getElementById("openList").addEventListener("click", function() {
-  document.getElementById("listPanel").classList.add("open");
-});
-
-document.getElementById("closeList").addEventListener("click", function() {
-  document.getElementById("listPanel").classList.remove("open");
-});
-
-document.getElementById("closePanel").addEventListener("click", function() {
-  document.getElementById("detailsPanel").classList.remove("open");
-});
-function resizeMap() {
-    document.getElementById("map").style.height =
-        window.innerHeight + "px";
-}
-
-window.addEventListener("resize", resizeMap);
-resizeMap();
 function resizeMapMobile() {
   const mapElement = document.getElementById("map");
   if (!mapElement) return;
 
   mapElement.style.height = window.innerHeight + "px";
 
-  if (typeof map !== "undefined") {
+  if (map) {
     setTimeout(() => map.invalidateSize(), 100);
   }
 }
 
 window.addEventListener("resize", resizeMapMobile);
 window.addEventListener("orientationchange", resizeMapMobile);
-resizeMapMobile();
