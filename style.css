@@ -1,0 +1,399 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  height: 56px;
+  background: #0b5cad;
+  color: white;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  padding: 0 18px;
+  font-size: 22px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+header > div:first-of-type {
+  text-align: center;
+}
+
+#openList {
+  justify-self: start;
+  border: none;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-size: 24px;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+#status {
+  justify-self: end;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+main {
+  display: flex;
+  height: calc(100vh - 56px);
+}
+
+#map {
+  flex: 1;
+  height: 100%;
+}
+
+#searchBox {
+  position: absolute;
+  top: 72px;
+  left: 86px;
+  z-index: 1000;
+  width: 360px;
+  max-width: calc(100vw - 110px);
+}
+
+#searchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+#detailsPanel {
+  width: 340px;
+  background: white;
+  padding: 18px;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+  overflow-y: auto;
+  position: relative;
+  z-index: 900;
+}
+
+#closePanel {
+  display: none;
+}
+
+.detail-title {
+  font-size: 24px;
+  margin: 8px 0 2px;
+}
+
+.detail-address {
+  color: #666;
+  margin-bottom: 14px;
+}
+
+.detail-photo {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: contain;
+  background: #f2f2f2;
+  border-radius: 12px;
+}
+
+
+
+.no-photo {
+  padding: 28px;
+  background: #f1f1f1;
+  border-radius: 12px;
+  text-align: center;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.photo-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.photo-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #0b5cad;
+  background: white;
+  color: #0b5cad;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.detail-card {
+  background: #f7f9fb;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.nav-btn {
+  display: block;
+  margin-top: 10px;
+  padding: 12px;
+  background: #0b5cad;
+  color: white !important;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.visit-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: #f7f9fb;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.visit-card > div,
+.done-btn {
+  min-height: 72px;
+  border-radius: 10px;
+}
+
+.visit-card > div {
+  background: #eeeeee;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.visit-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.visit-status {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.visit-status.done {
+  color: #2e7d32;
+}
+
+.done-btn {
+  padding: 12px;
+  border: none;
+  background: #2e7d32;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.done-btn.undo {
+  background: #666;
+}
+
+.more-info {
+  margin-top: 14px;
+}
+
+.more-info summary {
+  cursor: pointer;
+  font-weight: bold;
+  color: #0b5cad;
+  padding: 10px 0;
+}
+
+.number-marker div {
+  width: 34px;
+  height: 34px;
+  background: #0b5cad;
+  color: white;
+  border: 3px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+
+#listPanel {
+  position: fixed;
+  top: 56px;
+  left: -340px;
+  width: 320px;
+  height: calc(100vh - 56px);
+  background: white;
+  z-index: 2500;
+  box-shadow: 3px 0 14px rgba(0,0,0,0.25);
+  transition: left 0.25s ease;
+  overflow-y: auto;
+}
+
+#listPanel.open {
+  left: 0;
+}
+
+.list-header {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7f9fb;
+  border-bottom: 1px solid #ddd;
+}
+
+#closeList {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.location-item {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.location-item strong {
+  display: block;
+  font-size: 16px;
+}
+
+.location-item span {
+  color: #666;
+  font-size: 13px;
+}
+
+.location-item:hover {
+  background: #f1f6ff;
+}
+
+@media (max-width: 700px) {
+  main {
+    display: block;
+  }
+
+  html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+#map {
+    height: 100dvh;
+}
+
+  #detailsPanel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: -75vh;
+    width: auto;
+    height: 72vh;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.25);
+    transition: bottom 0.25s ease;
+    z-index: 2000;
+  }
+
+  #detailsPanel.open {
+    bottom: 0;
+  }
+
+  #closePanel {
+    display: block;
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    border: none;
+    background: transparent;
+    font-size: 32px;
+    cursor: pointer;
+  }
+
+  #listPanel {
+    width: 86vw;
+    left: -90vw;
+  }
+
+  header {
+    font-size: 17px;
+    gap: 8px;
+  }
+
+  #status {
+    font-size: 12px;
+  }
+
+  .detail-photo {
+    max-height: 180px;
+  }
+}
+/* MOBILOPTIMALISERING */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100dvh;
+}
+
+/* iPhone safe area */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Popup bedre på mobil */
+.leaflet-popup-content-wrapper {
+  max-width: 92vw;
+  border-radius: 16px;
+}
+
+.leaflet-popup-content {
+  width: 82vw !important;
+  max-height: 65dvh;
+  overflow-y: auto;
+  margin: 14px;
+}
+
+.leaflet-popup-content img {
+  width: 100%;
+  height: auto;
+  max-height: 38dvh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* Litt større trykkflater */
+.leaflet-control-zoom a {
+  width: 42px !important;
+  height: 42px !important;
+  line-height: 42px !important;
+  font-size: 24px !important;
+}
+
+/* Markører/popup skal ikke havne bak Safari-meny */
+.leaflet-bottom {
+  bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 600px) {
+  .leaflet-popup {
+    margin-bottom: 20px;
+  }
+}

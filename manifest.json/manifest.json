@@ -1,0 +1,10 @@
+{
+  "name": "Vannprøver i Valdres",
+  "short_name": "Vannprøver",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b5cad",
+  "orientation": "portrait-primary",
+  "icons": []
+}

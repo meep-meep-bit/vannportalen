@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <title>Vannprøver i Valdres</title>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vannprøver">
+
+  <meta name="theme-color" content="#0b5cad">
+
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <button id="openList">☰</button>
+    <div>Vannprøveportalen</div>
+    <div id="status">Laster prøvesteder...</div>
+  </header>
+
+  <div id="listPanel">
+    <div class="list-header">
+      <strong>Prøvesteder</strong>
+      <button id="closeList">×</button>
+    </div>
+    <div id="locationList"></div>
+  </div>
+
+  <div id="searchBox">
+    <input id="searchInput" type="text" placeholder="Søk etter gårdsnavn eller sted...">
+  </div>
+
+  <main>
+    <div id="map"></div>
+
+    <aside id="detailsPanel">
+      <button id="closePanel">×</button>
+      <div id="detailsContent">
+        <h2>Velg et prøvested</h2>
+        <p>Trykk på et punkt i kartet for å se detaljer.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
