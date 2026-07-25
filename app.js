@@ -3,6 +3,7 @@ const reportUrl = "https://github.com/meep-meep-bit/vannportalen/issues/new";
 const fagernes = { lat: 60.9858, lng: 9.2324 };
 
 let map;
+let baseTileLayer;
 let mapStarted = false;
 let locations = [];
 let pendingMapAction = null;
@@ -10,6 +11,8 @@ let lastFocusedElement = null;
 let activeLocationId = null;
 let invalidRowCount = 0;
 let currentQuery = "";
+let tileErrorCount = 0;
+let noticeRetryAction = null;
 
 const todayKey = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Europe/Oslo"
@@ -30,7 +33,9 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("btnAbout").addEventListener("click", showAboutDialog);
   document.getElementById("backButton").addEventListener("click", showHome);
   document.getElementById("closeModal").addEventListener("click", closeModal);
-  document.getElementById("retryLoadButton").addEventListener("click", loadLocations);
+  document.getElementById("retryLoadButton").addEventListener("click", function () {
+    if (noticeRetryAction) noticeRetryAction();
+  });
   document.getElementById("modalOverlay").addEventListener("click", function (event) {
     if (event.target === this) closeModal();
   });
@@ -661,19 +666,57 @@ function ensureLocationsLoaded(action) {
 
 function startMap() {
   if (typeof L === "undefined") {
-    showMapNotice("Kartbiblioteket kunne ikke lastes. Kontroller nettilgangen.", true);
+    showMapNotice(
+      "Kartbiblioteket kunne ikke lastes. Kontroller nettilgangen.",
+      true,
+      function () { window.location.reload(); }
+    );
     return false;
   }
 
   map = L.map("map", { zoomControl: true }).setView([60.92, 9.41], 11);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap-bidragsytere"
-  }).addTo(map);
 
   setupMapButtons();
   loadLocations();
   return true;
+}
+
+function ensureBaseTileLayer() {
+  if (baseTileLayer) return;
+
+  baseTileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap-bidragsytere"
+  });
+
+  baseTileLayer.on("loading", function () {
+    tileErrorCount = 0;
+    setLoadingStatus("Laster kart…");
+    document.getElementById("map").setAttribute("aria-busy", "true");
+  });
+
+  baseTileLayer.on("tileerror", function () {
+    tileErrorCount += 1;
+  });
+
+  baseTileLayer.on("load", function () {
+    document.getElementById("map").setAttribute("aria-busy", "false");
+    setLoadingStatus(locations.length ? `${locations.length} prøvesteder` : "Kart klart");
+
+    if (tileErrorCount > 0) {
+      const countText = tileErrorCount === 1 ? "Én kartflis" : `${tileErrorCount} kartfliser`;
+      showMapNotice(`${countText} kunne ikke lastes. Kontroller dekningen og prøv igjen.`, true, retryMapTiles);
+    }
+  });
+
+  baseTileLayer.addTo(map);
+}
+
+function retryMapTiles() {
+  if (!baseTileLayer) return;
+  hideMapNotice();
+  setLoadingStatus("Prøver kartet igjen…");
+  baseTileLayer.redraw();
 }
 
 function setupMapButtons() {
@@ -766,8 +809,11 @@ function loadLocations() {
 
       const group = L.featureGroup(locations.map(item => item.marker));
       map.fitBounds(group.getBounds().pad(0.18), { maxZoom: 14 });
+      ensureBaseTileLayer();
 
-      setLoadingStatus(`${locations.length} prøvesteder`);
+      if (!baseTileLayer.isLoading()) {
+        setLoadingStatus(`${locations.length} prøvesteder`);
+      }
       if (invalidRowCount) {
         showMapNotice(`${invalidRowCount} rad${invalidRowCount === 1 ? "" : "er"} uten gyldige koordinater ble hoppet over.`);
       }
@@ -798,8 +844,9 @@ function clearLocationMarkers() {
 }
 
 function handleLoadError(message) {
-  setLoadingStatus("Kunne ikke laste");
-  showMapNotice(message, true);
+  ensureBaseTileLayer();
+  setLoadingStatus("Kunne ikke laste steder");
+  showMapNotice(message, true, loadLocations);
   pendingMapAction = null;
   renderLocationList();
   updateProgressDisplays();
@@ -809,13 +856,15 @@ function setLoadingStatus(message) {
   document.getElementById("status").textContent = message;
 }
 
-function showMapNotice(message, allowRetry = false) {
+function showMapNotice(message, allowRetry = false, retryAction = null) {
+  noticeRetryAction = allowRetry ? retryAction : null;
   document.getElementById("mapNoticeText").textContent = message;
   document.getElementById("retryLoadButton").classList.toggle("hidden", !allowRetry);
   document.getElementById("mapNotice").classList.remove("hidden");
 }
 
 function hideMapNotice() {
+  noticeRetryAction = null;
   document.getElementById("mapNotice").classList.add("hidden");
 }
 
