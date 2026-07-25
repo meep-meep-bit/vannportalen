@@ -1,10 +1,20 @@
 {
-  "name": "Vannprøver i Valdres",
-  "short_name": "Vannprøver",
+  "name": "Vannportalen Valdres",
+  "short_name": "Vannportalen",
+  "description": "Kart og feltstøtte for innsamling av vannprøver i Valdres.",
+  "lang": "no",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0b5cad",
+  "background_color": "#effafa",
+  "theme_color": "#075985",
   "orientation": "portrait-primary",
-  "icons": []
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

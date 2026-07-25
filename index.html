@@ -3,67 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Kart og feltstøtte for innsamling av vannprøver i Valdres.">
 
-  <title>Vannprøver i Valdres</title>
+  <title>Vannportalen Valdres</title>
 
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Vannprøver">
-  <meta name="theme-color" content="#0b5cad">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vannportalen">
+  <meta name="theme-color" content="#075985">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="icon" href="app-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynhtRbyxTpyHvvn0K9ykq0ZB6M5M="
+    crossorigin="">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 
 <body>
+  <section id="homeScreen" class="home-screen" aria-labelledby="homeTitle">
+    <div class="home-shell">
+      <header class="brand">
+        <div class="logo" aria-hidden="true">
+          <span class="logo-drop">●</span>
+        </div>
+        <div>
+          <p class="eyebrow">Feltverktøy for Valdres</p>
+          <h1 id="homeTitle">Vannportalen</h1>
+          <p class="subtitle">Finn riktig prøvested og hold oversikt gjennom dagen.</p>
+        </div>
+      </header>
 
-  <section id="homeScreen" class="home-screen">
-    <div class="home-card">
-      <div class="logo">💧</div>
-      <h1>Vannportalen Valdres</h1>
-      <p class="subtitle">Kart og feltstøtte for vannprøver</p>
+      <div id="homeProgress" class="progress-card" aria-live="polite">
+        <div>
+          <span class="progress-label">Dagens fremdrift</span>
+          <strong id="homeProgressText">Åpne kartet for å laste prøvesteder</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <span id="homeProgressBar"></span>
+        </div>
+      </div>
 
-      <div class="menu">
-        <button id="btnShowMap">🗺️ Vis alle prøvesteder</button>
-        <button id="btnRoutePlanner">🚗 Planlegg dagens rute</button>
-        <button id="btnNearest">📍 Finn nærmeste prøvested</button>
-        <button id="btnReport">📷 Meld inn endringer</button>
-        <button id="btnAbout">ℹ️ Om prosjektet</button>
+      <nav class="menu" aria-label="Hovedmeny">
+        <button id="btnRoutePlanner" class="menu-button menu-primary" type="button">
+          <span class="menu-icon" aria-hidden="true">↗</span>
+          <span><strong>Planlegg dagens rute</strong><small>Velg stopp og start innsamlingen</small></span>
+        </button>
+        <button id="btnShowMap" class="menu-button" type="button">
+          <span class="menu-icon" aria-hidden="true">⌖</span>
+          <span><strong>Vis alle prøvesteder</strong><small>Åpne kart og stedsliste</small></span>
+        </button>
+        <button id="btnNearest" class="menu-button" type="button">
+          <span class="menu-icon" aria-hidden="true">◎</span>
+          <span><strong>Finn nærmeste</strong><small>Bruk posisjonen din</small></span>
+        </button>
+      </nav>
+
+      <div class="utility-menu">
+        <button id="btnReport" type="button">Meld inn en endring</button>
+        <button id="btnAbout" type="button">Om portalen</button>
       </div>
     </div>
   </section>
 
-  <section id="mapScreen" class="map-screen hidden">
-
+  <section id="mapScreen" class="map-screen hidden" aria-label="Kart over prøvesteder">
     <div class="topbar">
-      <button id="backButton" class="top-button">← Meny</button>
-      <button id="openList" class="top-button icon-button">☰</button>
-      <input id="searchInput" type="text" placeholder="Søk etter gårdsnavn eller sted...">
-      <div id="status">Laster prøvesteder...</div>
+      <button id="backButton" class="top-button back-button" type="button" aria-label="Tilbake til meny">
+        <span aria-hidden="true">←</span><span class="button-label">Meny</span>
+      </button>
+      <button id="openList" class="top-button icon-button" type="button" aria-label="Åpne prøvestedsliste">☰</button>
+      <label class="search-box">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <span class="sr-only">Søk etter prøvested</span>
+        <input id="searchInput" type="search" placeholder="Søk etter sted, ID eller adresse" autocomplete="off">
+      </label>
+      <div id="status" role="status" aria-live="polite">Laster prøvesteder…</div>
     </div>
 
     <div id="map"></div>
 
-    <aside id="listPanel">
+    <div id="mapNotice" class="map-notice hidden" role="status">
+      <span id="mapNoticeText"></span>
+      <button id="retryLoadButton" class="text-button hidden" type="button">Prøv igjen</button>
+    </div>
+
+    <aside id="listPanel" aria-labelledby="listTitle" aria-hidden="true">
       <div class="panel-header">
-        <strong>Prøvesteder</strong>
-        <button id="closeList">×</button>
+        <div>
+          <span class="panel-kicker">Dagens oversikt</span>
+          <strong id="listTitle">Prøvesteder</strong>
+        </div>
+        <button id="closeList" class="close-button" type="button" aria-label="Lukk prøvestedsliste">×</button>
+      </div>
+      <div class="list-tools">
+        <div id="listProgress" class="list-progress">Ingen steder lastet</div>
+        <label class="filter-toggle">
+          <input id="hideCompleted" type="checkbox">
+          <span>Vis bare ikke hentede</span>
+        </label>
       </div>
       <div id="locationList"></div>
     </aside>
 
-    <aside id="detailsPanel">
-      <button id="closePanel">×</button>
+    <aside id="detailsPanel" aria-labelledby="detailsTitle" aria-hidden="true">
+      <button id="closePanel" class="close-button" type="button" aria-label="Lukk detaljer">×</button>
       <div id="detailsContent"></div>
     </aside>
-
   </section>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="app.js"></script>
+  <div id="modalOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card" tabindex="-1">
+      <div class="modal-header">
+        <div>
+          <span class="panel-kicker">Vannportalen</span>
+          <h2 id="modalTitle">Informasjon</h2>
+        </div>
+        <button id="closeModal" class="close-button" type="button" aria-label="Lukk dialog">×</button>
+      </div>
+      <div id="modalContent" class="modal-content"></div>
+    </div>
+  </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
