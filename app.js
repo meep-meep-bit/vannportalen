@@ -684,9 +684,9 @@ function startMap() {
 function ensureBaseTileLayer() {
   if (baseTileLayer) return;
 
-  baseTileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  baseTileLayer = L.tileLayer("https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png", {
     maxZoom: 19,
-    attribution: "&copy; OpenStreetMap-bidragsytere"
+    attribution: "&copy; Kartverket"
   });
 
   baseTileLayer.on("loading", function () {

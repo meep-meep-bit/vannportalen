@@ -1,9 +1,9 @@
-const cacheName = "vannportalen-shell-v5";
+const cacheName = "vannportalen-shell-v6";
 const appShell = [
   "./",
   "./index.html",
   "./style.css?v=3",
-  "./app.js?v=5",
+  "./app.js?v=6",
   "./manifest.json",
   "./app-icon.svg"
 ];
