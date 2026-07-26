@@ -684,7 +684,7 @@ function startMap() {
 function ensureBaseTileLayer() {
   if (baseTileLayer) return;
 
-  baseTileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  baseTileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "&copy; OpenStreetMap-bidragsytere"
   });
